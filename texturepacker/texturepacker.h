@@ -284,6 +284,27 @@ typedef struct bitmap_t
 	unsigned char *pixels; /**< pixel data */
 } bitmap_t;
 
+/* create a clean bitmap */
+bitmap_t *Bitmap_Create(int w, int h);
+
+/* create a bitmap from png file */
+bitmap_t *Bitmap_CreateFromPNG(const char *filename);
+
+/* destroy a bitmap */
+void Bitmap_Destroy(bitmap_t *bitmap);
+
+/* clean a bitmap with specific color */
+void Bitmap_Clean(bitmap_t *bitmap, int argb);
+
+/* draw a pixel to bitmap */
+void Bitmap_DrawPixel(bitmap_t *bitmap, int x, int y, int rgba);
+
+/* draw a bitmap on another bitmap */
+void Bitmap_CopyPasteBitmap(bitmap_t *canvas, bitmap_t *bitmap, int x, int y);
+
+/* write a bitmap to png file */
+void Bitmap_WriteAsPNG(bitmap_t *bitmap, const char *filename);
+
 /* find next POT of x */
 int Util_NextPOT(int x);
 
@@ -308,25 +329,7 @@ void Util_GetDateString(char *buf, int *length);
 /* compile rect list to file */
 void Util_CompileRects(list_t *list, int format, const char* filename);
 
-/* create a clean bitmap */
-bitmap_t *Bitmap_Create(int w, int h);
-
-/* create a bitmap from png file */
-bitmap_t *Bitmap_CreateFromPNG(const char *filename);
-
-/* destroy a bitmap */
-void Bitmap_Destroy(bitmap_t *bitmap);
-
-/* clean a bitmap with specific color */
-void Bitmap_Clean(bitmap_t *bitmap, int argb);
-
-/* draw a pixel to bitmap */
-void Bitmap_DrawPixel(bitmap_t *bitmap, int x, int y, int rgba);
-
-/* draw a bitmap on another bitmap */
-void Bitmap_CopyPasteBitmap(bitmap_t *canvas, bitmap_t *bitmap, int x, int y);
-
-/* write a bitmap to png file */
-void Bitmap_WriteAsPNG(bitmap_t *bitmap, const char *filename);
+/* print simple usage message */
+void Util_PrintSimpleUsage(void);
 
 #endif /* TEXTUREPACKER_H_ */

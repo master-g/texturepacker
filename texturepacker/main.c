@@ -176,7 +176,7 @@ int main(int argc, const char * argv[])
     Util_CompileRects(NULL, 0, "shit");
     /* packpng(); */
     
-    Util_GetDateString(NULL, 0);
+    Util_PrintSimpleUsage();
     
     return 0;
 }

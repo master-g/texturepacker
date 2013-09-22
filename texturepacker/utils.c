@@ -15,6 +15,87 @@
 #include "lodepng.h"
 #include "tinydir.h"
 
+/* create a empty bitmap */
+bitmap_t *Bitmap_Create(int w, int h)
+{
+    bitmap_t *bitmap = NULL;
+    bitmap = (bitmap_t *)malloc(sizeof(bitmap_t));
+    if (bitmap == NULL)
+        printf(MEMORY_ERROR_MSG);
+    
+    bitmap->w = w;
+    bitmap->h = h;
+    bitmap->pixels = (unsigned char *)malloc(w * h * ARGBSIZE);
+    memset(bitmap->pixels, 0, w * h * ARGBSIZE);
+    
+    if (bitmap->pixels == NULL)
+        printf(MEMORY_ERROR_MSG);
+    
+    return bitmap;
+}
+
+/* create a bitmap from png file */
+bitmap_t *Bitmap_CreateFromPNG(const char *filename)
+{
+    unsigned error;
+    bitmap_t *bitmap = NULL;
+    
+    bitmap = (bitmap_t *)malloc(sizeof(bitmap_t));
+    memset(bitmap, 0, sizeof(bitmap_t));
+    
+	error = lodepng_decode32_file(&bitmap->pixels, (unsigned *)&bitmap->w, (unsigned *)&bitmap->h, filename);
+	if(error)
+        printf("error %u: %s\n", error, lodepng_error_text(error));
+    
+    return bitmap;
+}
+
+void Bitmap_Destroy(bitmap_t *bitmap)
+{
+    if (bitmap->pixels != NULL)
+        free(bitmap->pixels);
+    
+    free(bitmap);
+}
+
+/* clean a bitmap with specific color */
+void Bitmap_Clean(bitmap_t *bitmap, int argb)
+{
+    int i = 0;
+    for (i = 0; i < bitmap->w * bitmap->h; i++)
+        ((int *)bitmap->pixels)[i] = argb;
+}
+
+void Bitmap_DrawPixel(bitmap_t *bitmap, int x, int y, int rgba)
+{
+    unsigned char color[4];
+    memcpy(color, &rgba, ARGBSIZE);
+    bitmap->pixels[(x + bitmap->w * y) * ARGBSIZE + 0] = color[0];
+    bitmap->pixels[(x + bitmap->w * y) * ARGBSIZE + 1] = color[1];
+    bitmap->pixels[(x + bitmap->w * y) * ARGBSIZE + 2] = color[2];
+    bitmap->pixels[(x + bitmap->w * y) * ARGBSIZE + 3] = color[3];
+}
+
+void Bitmap_CopyPasteBitmap(bitmap_t *canvas, bitmap_t *bitmap, int x, int y)
+{
+    int i = 0;
+    int lineSize = 0;
+    
+    lineSize = bitmap->w * ARGBSIZE;
+    
+    for (i = 0; i < bitmap->h; i++)
+        memcpy(&(canvas->pixels[(x + (y + i) * canvas->w) * ARGBSIZE]), &(bitmap->pixels[i * lineSize]), lineSize);
+}
+
+void Bitmap_WriteAsPNG(bitmap_t *bitmap, const char *filename)
+{
+    /*Encode the image*/
+	unsigned error = lodepng_encode32_file(filename, bitmap->pixels, bitmap->w, bitmap->h);
+    
+	/*if there's an error, display it*/
+	if(error) printf("error %u: %s\n", error, lodepng_error_text(error));
+}
+
 /* find next POT of x */
 int Util_NextPOT(int x)
 {
@@ -230,83 +311,12 @@ void Util_CompileRects(list_t *list, int format, const char* filename)
     endfuncmap[format](fp);
 }
 
-/* create a empty bitmap */
-bitmap_t *Bitmap_Create(int w, int h)
+/* print simple usage message */
+void Util_PrintSimpleUsage(void)
 {
-    bitmap_t *bitmap = NULL;
-    bitmap = (bitmap_t *)malloc(sizeof(bitmap_t));
-    if (bitmap == NULL)
-        printf(MEMORY_ERROR_MSG);
-    
-    bitmap->w = w;
-    bitmap->h = h;
-    bitmap->pixels = (unsigned char *)malloc(w * h * ARGBSIZE);
-    memset(bitmap->pixels, 0, w * h * ARGBSIZE);
-    
-    if (bitmap->pixels == NULL)
-        printf(MEMORY_ERROR_MSG);
-    
-    return bitmap;
-}
-
-/* create a bitmap from png file */
-bitmap_t *Bitmap_CreateFromPNG(const char *filename)
-{
-    unsigned error;
-    bitmap_t *bitmap = NULL;
-    
-    bitmap = (bitmap_t *)malloc(sizeof(bitmap_t));
-    memset(bitmap, 0, sizeof(bitmap_t));
-    
-	error = lodepng_decode32_file(&bitmap->pixels, (unsigned *)&bitmap->w, (unsigned *)&bitmap->h, filename);
-	if(error)
-        printf("error %u: %s\n", error, lodepng_error_text(error));
-    
-    return bitmap;
-}
-
-void Bitmap_Destroy(bitmap_t *bitmap)
-{
-    if (bitmap->pixels != NULL)
-        free(bitmap->pixels);
-
-    free(bitmap);
-}
-
-/* clean a bitmap with specific color */
-void Bitmap_Clean(bitmap_t *bitmap, int argb)
-{
-    int i = 0;
-    for (i = 0; i < bitmap->w * bitmap->h; i++)
-        ((int *)bitmap->pixels)[i] = argb;
-}
-
-void Bitmap_DrawPixel(bitmap_t *bitmap, int x, int y, int rgba)
-{
-    unsigned char color[4];
-    memcpy(color, &rgba, ARGBSIZE);
-    bitmap->pixels[(x + bitmap->w * y) * ARGBSIZE + 0] = color[0];
-    bitmap->pixels[(x + bitmap->w * y) * ARGBSIZE + 1] = color[1];
-    bitmap->pixels[(x + bitmap->w * y) * ARGBSIZE + 2] = color[2];
-    bitmap->pixels[(x + bitmap->w * y) * ARGBSIZE + 3] = color[3];
-}
-
-void Bitmap_CopyPasteBitmap(bitmap_t *canvas, bitmap_t *bitmap, int x, int y)
-{
-    int i = 0;
-    int lineSize = 0;
-    
-    lineSize = bitmap->w * ARGBSIZE;
-    
-    for (i = 0; i < bitmap->h; i++)
-        memcpy(&(canvas->pixels[(x + (y + i) * canvas->w) * ARGBSIZE]), &(bitmap->pixels[i * lineSize]), lineSize);
-}
-
-void Bitmap_WriteAsPNG(bitmap_t *bitmap, const char *filename)
-{
-    /*Encode the image*/
-	unsigned error = lodepng_encode32_file(filename, bitmap->pixels, bitmap->w, bitmap->h);
-    
-	/*if there's an error, display it*/
-	if(error) printf("error %u: %s\n", error, lodepng_error_text(error));
+    printf("Usage:\n\n");
+    printf("\ttextureatlas [options] <path> -o <filename>\n\n");
+    printf("where <path> is the directory of the png files.\n");
+    printf("Default is the directory where the textureatlas is.\n\n");
+    printf("Try -longhelp for an exhaustive list of advanced options.\n");
 }
