@@ -25,8 +25,7 @@ bitmap_t *Bitmap_Create(int w, int h)
     
     bitmap->w = w;
     bitmap->h = h;
-    bitmap->pixels = (unsigned char *)malloc(w * h * ARGBSIZE);
-    memset(bitmap->pixels, 0, w * h * ARGBSIZE);
+    bitmap->pixels = (unsigned char *)calloc(1, w * h * ARGBSIZE);
     
     if (bitmap->pixels == NULL)
         printf(MEMORY_ERROR_MSG);
@@ -40,8 +39,7 @@ bitmap_t *Bitmap_CreateFromPNG(const char *filename)
     unsigned error;
     bitmap_t *bitmap = NULL;
     
-    bitmap = (bitmap_t *)malloc(sizeof(bitmap_t));
-    memset(bitmap, 0, sizeof(bitmap_t));
+    bitmap = (bitmap_t *)calloc(1, sizeof(bitmap_t));
     
 	error = lodepng_decode32_file(&bitmap->pixels, (unsigned *)&bitmap->w, (unsigned *)&bitmap->h, filename);
 	if(error)
@@ -154,8 +152,7 @@ const char *Util_CopyString(char **dst, const char *src)
     
     length = strlen(src);
     
-    *dst = malloc(length + 1);
-    memset(*dst, 0, length + 1);
+    *dst = calloc(1, length + 1);
     memcpy(*dst, src, length);
     
     return src;
@@ -243,8 +240,7 @@ void Lua_BegGenerator(const char* filename, FILE **fp)
     char *fnamebuf = NULL;
     char datestr[DATELEN];
     
-    fnamebuf = malloc(strlen(filename) + 4);
-    memset(fnamebuf, 0, strlen(filename) + 4);
+    fnamebuf = calloc(1, strlen(filename) + 4);
     sprintf(fnamebuf, "%s.lua", filename);
     
     *fp = fopen(fnamebuf, "wb");
@@ -318,5 +314,16 @@ void Util_PrintSimpleUsage(void)
     printf("\ttextureatlas [options] <path> -o <filename>\n\n");
     printf("where <path> is the directory of the png files.\n");
     printf("Default is the directory where the textureatlas is.\n\n");
-    printf("Try -longhelp for an exhaustive list of advanced options.\n");
+    printf("Try -help for an exhaustive list of advanced options.\n");
+}
+
+/* print exhaustive message */
+void Util_PrintExhaustiveUsage(void)
+{
+    printf("Usage:\n");
+    printf(" textureatlas [options] path [-o out_file]\n\n");
+    printf("textureatlas can only accept png images\n");
+    printf("options:\n");
+    printf("  -h / -help  ............ short help\n");
+    printf("  -H / -longhelp  ........ long help\n");
 }

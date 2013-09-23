@@ -15,7 +15,7 @@
 list_t *List_Create(void)
 {
     list_t *list = NULL;
-    list = (list_t *)malloc(sizeof(list_t));
+    list = (list_t *)calloc(1, sizeof(list_t));
     if (list == NULL)
         printf(MEMORY_ERROR_MSG);
     

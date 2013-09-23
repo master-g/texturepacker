@@ -332,4 +332,7 @@ void Util_CompileRects(list_t *list, int format, const char* filename);
 /* print simple usage message */
 void Util_PrintSimpleUsage(void);
 
+/* print exhaustive message */
+void Util_PrintExhaustiveUsage(void);
+
 #endif /* TEXTUREPACKER_H_ */

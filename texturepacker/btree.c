@@ -19,7 +19,7 @@
 btree_t *BTree_Create(void)
 {
     btree_t *tree = NULL;
-    tree = (btree_t *)malloc(sizeof(btree_t));
+    tree = (btree_t *)calloc(1, sizeof(btree_t));
     
     if (tree == NULL)
         printf(MEMORY_ERROR_MSG);
@@ -99,12 +99,15 @@ void BTree_SetImage(btree_t *node, image_t *image)
     if (dstImg != NULL)
     {
         if (dstImg->filename != NULL)
+        {
             free(dstImg->filename);
+            dstImg->filename = NULL;
+        }
         
         free(dstImg);
     }
     
-    dstImg = (image_t *)malloc(sizeof(image_t));
+    dstImg = (image_t *)calloc(1, sizeof(image_t));
     Util_CopyString(&dstImg->filename, image->filename);
     
     dstImg->w = image->w;

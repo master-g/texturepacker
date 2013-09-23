@@ -21,15 +21,16 @@ void test_algorithm(void)
     list_t *fileListIter = NULL;
     int i = 0;
     char filename[10];
+    int success = 1;
+    int initsize = 512;
     
     srand((unsigned int)time(NULL));
         
-    for (i = 0; i < 800; i++)
+    for (i = 0; i < 2800; i++)
     {
         list_t *node = NULL;
         image_t *img = NULL;
-        img = (image_t *)malloc(sizeof(image_t));
-        memset(img, 0, sizeof(image_t));
+        img = (image_t *)calloc(1, sizeof(image_t));
         node = List_Create();
         
         sprintf(filename, "%d.png", i);
@@ -49,17 +50,35 @@ void test_algorithm(void)
     tree = BTree_Create();
     tree->rect.x = 0;
     tree->rect.y = 0;
-    tree->rect.w = 512;
-    tree->rect.h = 512;
+    tree->rect.w = initsize;
+    tree->rect.h = initsize;
     
-    for (fileListIter = imageList; fileListIter != NULL; fileListIter = fileListIter->next)
-    {   
-        if (BTree_Insert(tree, (image_t *)fileListIter->payload.data, padding) == NULL)
-        {
-            printf("Shit happens\n");
-            break;
+    do
+    {
+        success = 1;
+        
+        for (fileListIter = imageList; fileListIter != NULL; fileListIter = fileListIter->next)
+        {   
+            if (BTree_Insert(tree, (image_t *)fileListIter->payload.data, padding) == NULL)
+            {
+                printf("Shit happens\n");
+                success = 0;
+                break;
+            }
         }
-    }
+        
+        if (!success)
+        {
+            BTree_Destroy(tree);
+            tree = BTree_Create();
+            tree->rect.x = 0;
+            tree->rect.y = 0;
+            initsize = Util_NextPOT(initsize+1);
+            tree->rect.w = initsize;
+            tree->rect.h = initsize;
+        }
+        
+    } while (!success);
     
     printf("-----\n");
     List_Destroy(imageList, ListDestroy_List|ListDestroy_PayLoad);
@@ -71,7 +90,7 @@ void test_algorithm(void)
         bitmap_t *canvas = NULL;
         rect_t *rect = NULL;
         
-        canvas = Bitmap_Create(512, 512);
+        canvas = Bitmap_Create(initsize, initsize);
         
         iter = treeDumpList;
         for (iter = treeDumpList; iter != NULL; iter = iter->next)
@@ -176,7 +195,8 @@ int main(int argc, const char * argv[])
     Util_CompileRects(NULL, 0, "shit");
     /* packpng(); */
     
-    Util_PrintSimpleUsage();
+    /* Util_PrintSimpleUsage(); */
+    /* Util_PrintExhaustiveUsage(); */
     
     return 0;
 }
