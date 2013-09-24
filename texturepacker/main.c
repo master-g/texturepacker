@@ -196,7 +196,7 @@ int main(int argc, const char * argv[])
     /* packpng(); */
     
     /* Util_PrintSimpleUsage(); */
-    /* Util_PrintExhaustiveUsage(); */
+    Util_PrintExhaustiveUsage();
     
     return 0;
 }

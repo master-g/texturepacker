@@ -326,4 +326,21 @@ void Util_PrintExhaustiveUsage(void)
     printf("options:\n");
     printf("  -h / -help  ............ short help\n");
     printf("  -H / -longhelp  ........ long help\n");
+    printf("  -a <int> ............... auto resize the output texture (0: non POT ... 1: POT)\n");
+    printf("  -w <int> ............... output texture width\n");
+    printf("  -h <int> ............... output texture height\n");
+    printf("  -s <int> ............... output texture square width\n");
+    printf("  -f <string> ............ output format, one of:\n");
+    printf("                             lua\n");
+}
+
+/* parse parameters */
+void Util_ParseParameters(int argc, char *argv[])
+{
+    if (argc == 1)
+    {
+        Util_PrintSimpleUsage();
+    }
+    
+    
 }

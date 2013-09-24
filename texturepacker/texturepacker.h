@@ -265,6 +265,18 @@ btree_t *BTree_Insert(btree_t *root, image_t *image, int padding);
  * ************************************************************
  */
 
+typedef struct param_t
+{
+    int helpSimple;
+    int helpLong;
+    int autoExtend;
+    int width;
+    int height;
+    int square;
+    int format;
+    
+} param_t;
+
 /**
  *	@brief	output file format enumeration
  */
@@ -334,5 +346,8 @@ void Util_PrintSimpleUsage(void);
 
 /* print exhaustive message */
 void Util_PrintExhaustiveUsage(void);
+
+/* parse parameters */
+void Util_ParseParameters(int argc, char *argv[]);
 
 #endif /* TEXTUREPACKER_H_ */
