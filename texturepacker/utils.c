@@ -327,20 +327,81 @@ void Util_PrintExhaustiveUsage(void)
     printf("  -h / -help  ............ short help\n");
     printf("  -H / -longhelp  ........ long help\n");
     printf("  -a <int> ............... auto resize the output texture (0: non POT ... 1: POT)\n");
-    printf("  -w <int> ............... output texture width\n");
-    printf("  -h <int> ............... output texture height\n");
+    printf("  -wh <int> <int> ........ output texture width and height\n");
     printf("  -s <int> ............... output texture square width\n");
     printf("  -f <string> ............ output format, one of:\n");
     printf("                             lua\n");
 }
 
 /* parse parameters */
-void Util_ParseParameters(int argc, char *argv[])
+void Util_ParseParameters(param_t *param, int argc, const char *argv[])
 {
+    int c = 0;
+    memset(param, 0, sizeof(param_t));
+    
+    /* parse parameters */
     if (argc == 1)
     {
         Util_PrintSimpleUsage();
+        return;
     }
     
+    for (c = 1; c < argc; c++)
+    {
+        if (!strcmp(argv[c], "-h") || !strcmp(argv[c], "-help"))
+        {
+            Util_PrintSimpleUsage();
+            break;
+        }
+        else if (!strcmp(argv[c], "-H") || !strcmp(argv[c], "-longhelp"))
+        {
+            Util_PrintExhaustiveUsage();
+            break;
+        }
+        else if (!strcmp(argv[c], "-a") && c < argc - 1)
+        {
+            param->autoExtend = (int)strtol(argv[++c], NULL, 0);
+        }
+        else if (!strcmp(argv[c], "-wh") && c < argc - 2)
+        {
+            param->width = (int)strtol(argv[++c], NULL, 0);
+            param->height = (int)strtol(argv[++c], NULL, 0);
+        }
+        else if (!strcmp(argv[c], "-s") && c < argc - 1)
+        {
+            param->square = (int)strtol(argv[++c], NULL, 0);
+        }
+        else if (!strcmp(argv[c], "-f") && c < argc - 1)
+        {
+            if (!strcmp(argv[++c], "lua"))
+            {
+                param->format = FileFormat_Lua;
+            }
+            else
+            {
+                printf("Error! Unrecognized output format %s\n", argv[c]);
+            }
+        }
+        else if (!strcmp(argv[c], "-o") && c < argc - 1)
+        {
+            Util_CopyString(&param->outfile, argv[++c]);
+        }
+        else if (!strcmp(argv[c], "-v"))
+        {
+            param->verbose = 1;
+        }
+        else if (argv[c][0] == '-')
+        {
+            printf("Error! Unknown options '%s'\n", argv[c]);
+            Util_PrintExhaustiveUsage();
+            break;
+        }
+        else
+        {
+            Util_CopyString(&param->inpath, argv[c]);
+        }
+    }
+    
+    /* validate parameter */
     
 }
