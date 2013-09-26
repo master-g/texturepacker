@@ -198,6 +198,9 @@ int main(int argc, const char * argv[])
     
     Util_ParseParameters(&param, argc, argv);
     
+    if (!param.valid)
+        return 0;
+    
     return 0;
 }
 

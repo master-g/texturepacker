@@ -361,11 +361,21 @@ void Util_ParseParameters(param_t *param, int argc, const char *argv[])
         else if (!strcmp(argv[c], "-a") && c < argc - 1)
         {
             param->autoExtend = (int)strtol(argv[++c], NULL, 0);
+            if (param->autoExtend != 0 || param->autoExtend != 1)
+            {
+                printf("Error! -a accept 0 or 1 only\n");
+                break;
+            }
         }
         else if (!strcmp(argv[c], "-wh") && c < argc - 2)
         {
             param->width = (int)strtol(argv[++c], NULL, 0);
             param->height = (int)strtol(argv[++c], NULL, 0);
+            if (param->width <= 0 || param->height <= 0)
+            {
+                printf("Error! TextureAtlas only takes positive parameters\n");
+                break;
+            }
         }
         else if (!strcmp(argv[c], "-s") && c < argc - 1)
         {
@@ -403,5 +413,33 @@ void Util_ParseParameters(param_t *param, int argc, const char *argv[])
     }
     
     /* validate parameter */
+    if (param->outfile == NULL)
+    {
+        Util_PrintSimpleUsage();
+        return;
+    }
     
+    if (param->outfile == NULL)
+    {
+        printf("Error! Output file missing\n");
+        return;
+    }
+    
+    if (param->inpath == NULL)
+    {
+        Util_CopyString(&param->inpath, ".");
+        return;
+    }
+    
+    if (param->square != 0 && (param->width + param->height) != 0)
+    {
+        printf("Warning! Both -s and -wh are set, textureatlas will use -s only\n");
+        param->valid = 1;
+        return;
+    }
+    else if (param->square != 0)
+    {
+        param->valid = 1;
+        return;
+    }
 }
