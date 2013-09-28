@@ -267,7 +267,8 @@ btree_t *BTree_Insert(btree_t *root, image_t *image, int padding);
 
 typedef struct param_t
 {
-    int autoExtend;
+    int autoextend;
+    int pot;
     int width;
     int height;
     int square;

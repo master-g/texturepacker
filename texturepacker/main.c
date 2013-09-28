@@ -192,8 +192,10 @@ void packpng(void)
 int main(int argc, const char * argv[])
 {
     param_t param;
+    /*
     test_algorithm();
     Util_CompileRects(NULL, 0, "shit");
+     */
     /* packpng(); */
     
     Util_ParseParameters(&param, argc, argv);

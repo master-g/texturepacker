@@ -324,8 +324,8 @@ void Util_PrintExhaustiveUsage(void)
     printf(" textureatlas [options] path [-o out_file]\n\n");
     printf("textureatlas can only accept png images\n");
     printf("options:\n");
-    printf("  -h / -help  ............ short help\n");
-    printf("  -H / -longhelp  ........ long help\n");
+    printf("  -h / -help ............. short help\n");
+    printf("  -H / -longhelp ......... long help\n");
     printf("  -a <int> ............... auto resize the output texture (0: non POT ... 1: POT)\n");
     printf("  -wh <int> <int> ........ output texture width and height\n");
     printf("  -s <int> ............... output texture square width\n");
@@ -351,17 +351,17 @@ void Util_ParseParameters(param_t *param, int argc, const char *argv[])
         if (!strcmp(argv[c], "-h") || !strcmp(argv[c], "-help"))
         {
             Util_PrintSimpleUsage();
-            break;
+            return;
         }
         else if (!strcmp(argv[c], "-H") || !strcmp(argv[c], "-longhelp"))
         {
             Util_PrintExhaustiveUsage();
-            break;
+            return;
         }
         else if (!strcmp(argv[c], "-a") && c < argc - 1)
         {
-            param->autoExtend = (int)strtol(argv[++c], NULL, 0);
-            if (param->autoExtend != 0 || param->autoExtend != 1)
+            param->autoextend = (int)strtol(argv[++c], NULL, 0);
+            if (param->autoextend != 0 || param->autoextend != 1)
             {
                 printf("Error! -a accept 0 or 1 only\n");
                 break;
