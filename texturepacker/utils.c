@@ -278,7 +278,7 @@ void Lua_CplGenerator(rect_t *rect, FILE *fp)
         WRITE_STR_TO_FILE("\"] = {\n", fp);
         WRITE_STR_TO_FILE("\t\tfile = \"texture_digits\",\n", fp);
         memset(strbuf, 0, STR_BUF_LEN);
-        sprintf(strbuf, "\t\tx = %d, y = %d\n", rect->x, rect->y);
+        sprintf(strbuf, "\t\tx = %d, y = %d,\n", rect->x, rect->y);
         WRITE_STR_TO_FILE(strbuf, fp);;
         memset(strbuf, 0, STR_BUF_LEN);
         sprintf(strbuf, "\t\tw = %d, h = %d,\n", img->w, img->h);
