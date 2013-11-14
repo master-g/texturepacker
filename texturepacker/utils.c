@@ -167,7 +167,7 @@ void Util_PushFileToList(list_t **list, const char *filename)
     if (strcmp(Util_GetFileExtension(filename), "png") != 0)
         return;
     
-    img = (image_t *)malloc(sizeof(image_t));
+    img = (image_t *)calloc(1, sizeof(image_t));
     Util_CopyString(&img->filename, filename);
     
     Util_ReadPNGinfo(filename, &img->w, &img->h);
@@ -212,7 +212,8 @@ list_t *Util_ReadAllPNGs(void)
     return filelist;
 }
 
-#define DATELEN 20
+#define DATELEN     20
+#define STR_BUF_LEN 512
 
 /* format date string */
 void Util_GetDateString(char *buf, int *length)
@@ -256,20 +257,40 @@ void Lua_BegGenerator(const char* filename, FILE **fp)
     WRITE_STR_TO_FILE("\n-- ", *fp);
     WRITE_STR_TO_FILE(COPYRIGHT_STRING, *fp);
     WRITE_STR_TO_FILE("\n--\n\n", *fp);
+    
+    WRITE_STR_TO_FILE("texture_", *fp);
+    WRITE_STR_TO_FILE(filename, *fp);
+    WRITE_STR_TO_FILE("_map = \n{\n", *fp);
 }
 
 /* rectangle description generator for lua */
 void Lua_CplGenerator(rect_t *rect, FILE *fp)
 {
+    char strbuf[STR_BUF_LEN];
     image_t *img = NULL;
     
     img = (image_t *)rect->image;
     
+    if (img != NULL && img->filename != NULL)
+    {
+        WRITE_STR_TO_FILE("\t[\"", fp);
+        WRITE_STR_TO_FILE(img->filename, fp);
+        WRITE_STR_TO_FILE("\"] = {\n", fp);
+        WRITE_STR_TO_FILE("\t\tfile = \"texture_digits\",\n", fp);
+        memset(strbuf, 0, STR_BUF_LEN);
+        sprintf(strbuf, "\t\tx = %d, y = %d\n", rect->x, rect->y);
+        WRITE_STR_TO_FILE(strbuf, fp);;
+        memset(strbuf, 0, STR_BUF_LEN);
+        sprintf(strbuf, "\t\tw = %d, h = %d,\n", img->w, img->h);
+        WRITE_STR_TO_FILE(strbuf, fp);
+        WRITE_STR_TO_FILE("\t},\n", fp);
+    }
 }
 
 /* end of file generator for lua */
 void Lua_EndGenerator(FILE *fp)
 {
+    WRITE_STR_TO_FILE("};", fp);
     fclose(fp);
 }
 
@@ -314,7 +335,7 @@ void Util_PrintSimpleUsage(void)
     printf("\ttextureatlas [options] <path> -o <filename>\n\n");
     printf("where <path> is the directory of the png files.\n");
     printf("Default is the directory where the textureatlas is.\n\n");
-    printf("Try -help for an exhaustive list of advanced options.\n");
+    printf("Try -longhelp for an exhaustive list of advanced options.\n");
 }
 
 /* print exhaustive message */

@@ -177,6 +177,10 @@ void packpng(void)
         Bitmap_Destroy(canvas);
     }
     
+    {
+        Util_CompileRects(treeDumpList, FileFormat_Lua, "digits");
+    }
+    
     printf("-----\n");
     List_Destroy(treeDumpList, ListDestroy_List);
     
@@ -196,7 +200,7 @@ int main(int argc, const char * argv[])
     test_algorithm();
     Util_CompileRects(NULL, 0, "shit");
      */
-    /* packpng(); */
+    packpng();
     
     Util_ParseParameters(&param, argc, argv);
     
