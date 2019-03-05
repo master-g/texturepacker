@@ -1,4 +1,5 @@
 texturepacker
 =============
 
-a simple texture packer using algorithm from http://www.blackpawn.com/texts/lightmaps/
+a simple texture packer using algorithm from  
+http://blackpawn.com/texts/lightmaps/default.html
