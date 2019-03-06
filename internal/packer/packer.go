@@ -21,11 +21,13 @@
 package packer
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"image"
 	"image/png"
 	"os"
+	"path/filepath"
 	"sort"
 
 	"github.com/sirupsen/logrus"
@@ -41,10 +43,33 @@ type Config struct {
 	IgnoreLargeImage bool
 }
 
+// ImageJson representation of image info
+type ImageJson struct {
+	X int `json:"x"`
+	Y int `json:"y"`
+	W int `json:"width"`
+	H int `json:"height"`
+}
+
+// MetaJson representation of atlas meta info
+type MetaJson struct {
+	Filename string `json:"filename"`
+	W        int    `json:"width"`
+	H        int    `json:"height"`
+	Padding  int    `json:"padding"`
+}
+
+// AtlasJson representation of all images
+type AtlasJson struct {
+	Meta  *MetaJson             `json:"meta"`
+	Atlas map[string]*ImageJson `json:"atlas"`
+}
+
 type Packer struct {
 	cfg    *Config
 	root   *Node
 	canvas *image.RGBA
+	atlas  *AtlasJson
 }
 
 // NewPacker returns a new packer instance created with config
@@ -70,6 +95,15 @@ func NewPacker(cfg *Config) *Packer {
 		cfg:    cfg,
 		root:   root,
 		canvas: canvas,
+		atlas: &AtlasJson{
+			Meta: &MetaJson{
+				Filename: filepath.Base(cfg.OutputImagePath),
+				W:        cfg.OutputWidth,
+				H:        cfg.OutputHeight,
+				Padding:  cfg.Padding,
+			},
+			Atlas: make(map[string]*ImageJson),
+		},
 	}
 }
 
@@ -106,18 +140,39 @@ func (p *Packer) Pack(images map[string]string) (err error) {
 	}
 
 	percentage := float32(packed) / float32(len(sortedPath))
-	logrus.Infof("%v image packed (%.1f%%)", packed, percentage * 100)
+	logrus.Infof("%v image packed (%.1f%%)", packed, percentage*100)
+
+	// output image
 
 	var outputFile *os.File
 	outputFile, err = os.Create(p.cfg.OutputImagePath)
+	defer func() {
+		err = outputFile.Close()
+		if err != nil {
+			logrus.Warnf("cannot close file: %v, err: %v", p.cfg.OutputImagePath, err)
+		}
+	}()
 	if err != nil {
 		return
 	}
 	err = png.Encode(outputFile, p.canvas)
+
+	// output atlas
+	var outputAtlasFile *os.File
+	outputAtlasFile, err = os.Create(p.cfg.OutputSchemaPath)
+	defer func() {
+		err = outputAtlasFile.Close()
+		if err != nil {
+			logrus.Warnf("cannot close file: %v, err: %v", p.cfg.OutputSchemaPath, err)
+		}
+	}()
+
+	atlasJson, err := json.Marshal(p.atlas)
 	if err != nil {
+		logrus.Warnf("cannot marshal atlas json, err: %v", err)
 		return
 	}
-	err = outputFile.Close()
+	_, err = outputAtlasFile.Write(atlasJson)
 	return
 }
 
@@ -128,8 +183,12 @@ func (p *Packer) insert(img *ImageInfo) (err error) {
 		node.image = img
 		img.CopyToImage(p.canvas, node.rc)
 
-		// TODO: atlas output
-		logrus.Info(img.String())
+		p.atlas.Atlas[img.Name] = &ImageJson{
+			X: img.Left,
+			Y: img.Top,
+			W: img.Width,
+			H: img.Height,
+		}
 	} else {
 		err = errors.New(fmt.Sprintf("cannot pack %v, image oversize: %vx%v", img.absolutePath, img.Width, img.Height))
 	}

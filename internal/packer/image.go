@@ -149,7 +149,7 @@ func (img *ImageInfo) CopyToImage(canvas *image.RGBA, rc Rectangle) {
 	for y := 0; y < img.Height; y++ {
 		for x := 0; x < img.Width; x++ {
 			color := imgData.At(x, y)
-			canvas.Set(rc.Left + img.padding + x, rc.Top +img.padding + y, color)
+			canvas.Set(rc.Left+img.padding+x, rc.Top+img.padding+y, color)
 		}
 	}
 }
