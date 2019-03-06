@@ -214,11 +214,11 @@ func runApplication(args []string) {
 	}
 
 	// start
-	logrus.Infof("start packing %v images", len(imageMaps))
 	logrus.Infof("output image size: %vx%v, with %v pixel padding", width, height, padding)
 	logrus.Infof("output image format: %v", viper.GetString("format"))
 	logrus.Infof("ignore image that is too large:%v", viper.GetBool("ignore-large-image"))
 	logrus.Infof("output atlas schema: %v", viper.GetString("schema"))
+	logrus.Infof("start packing %v images", len(imageMaps))
 
 	err = p.Pack(imageMaps)
 	if err != nil {

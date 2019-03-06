@@ -22,6 +22,7 @@ package packer
 
 import (
 	"errors"
+	"fmt"
 	"image"
 	"image/png"
 	"os"
@@ -83,6 +84,7 @@ func (p *Packer) Pack(images map[string]string) (err error) {
 	}
 	sort.Strings(sortedPath)
 
+	packed := 0
 	for _, absPath := range sortedPath {
 		logrus.Debugf("packing %v", absPath)
 
@@ -98,8 +100,13 @@ func (p *Packer) Pack(images map[string]string) (err error) {
 				return
 			}
 			logrus.Debug("ignore oversize image:", imgInfo.absolutePath)
+		} else {
+			packed++
 		}
 	}
+
+	percentage := float32(packed) / float32(len(sortedPath))
+	logrus.Infof("%v image packed (%.1f%%)", packed, percentage * 100)
 
 	var outputFile *os.File
 	outputFile, err = os.Create(p.cfg.OutputImagePath)
@@ -114,14 +121,17 @@ func (p *Packer) Pack(images map[string]string) (err error) {
 	return
 }
 
-func (p *Packer) insert(img *ImageInfo) error {
+func (p *Packer) insert(img *ImageInfo) (err error) {
 	node := p.root.insert(img)
 	if node != nil {
 		// copy pixels
+		node.image = img
 		img.CopyToImage(p.canvas, node.rc)
 
 		// TODO: atlas output
 		logrus.Info(img.String())
+	} else {
+		err = errors.New(fmt.Sprintf("cannot pack %v, image oversize: %vx%v", img.absolutePath, img.Width, img.Height))
 	}
-	return nil
+	return
 }

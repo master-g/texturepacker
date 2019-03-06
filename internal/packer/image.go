@@ -26,7 +26,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"image"
+	"image/jpeg"
+	"image/png"
 	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/master-g/texturepacker/pkg/base58"
 	"github.com/sirupsen/logrus"
@@ -47,7 +51,9 @@ type ImageInfo struct {
 }
 
 func NewImageInfoParseFrom(imagePath, name string, padding int) *ImageInfo {
-	imgFile, err := os.Open(imagePath)
+	var err error
+	var imgFile *os.File
+	imgFile, err = os.Open(imagePath)
 	if err != nil {
 		logrus.Warnf("cannot access image file: %v, err: %v", imagePath, err)
 		return nil
@@ -60,10 +66,23 @@ func NewImageInfoParseFrom(imagePath, name string, padding int) *ImageInfo {
 	}()
 
 	// try standard decode
-	imgData, imgType, err := image.Decode(imgFile)
+	var imgData image.Image
+	var imgType string
+	imgData, imgType, err = image.Decode(imgFile)
 	if err != nil {
-		// TODO: try other format
-		return nil
+		ext := strings.ToLower(filepath.Ext(imagePath))
+		if strings.HasSuffix(ext, "jpg") || strings.HasSuffix(ext, "jpeg") {
+			imgData, err = jpeg.Decode(imgFile)
+			if err != nil {
+				logrus.Warnf("cannot decode jpg: %v, err: %v", imagePath, err)
+				return nil
+			}
+			imgType = "jpg"
+		}
+
+		if imgData == nil {
+			return nil
+		}
 	}
 
 	// result
@@ -98,11 +117,40 @@ func (img *ImageInfo) CopyToImage(canvas *image.RGBA, rc Rectangle) {
 	img.Top = rc.Top + img.padding
 
 	// copy to canvas
-	logrus.Info(img.imgType)
+	imgFile, err := os.Open(img.absolutePath)
+	if err != nil {
+		logrus.Warnf("cannot open file: %v, err:%v", img.absolutePath, err)
+		return
+	}
+	defer func() {
+		err = imgFile.Close()
+		if err != nil {
+			logrus.Warnf("cannot close file: %v, err: %v", img.absolutePath, err)
+		}
+	}()
+
+	var imgData image.Image
 	switch img.imgType {
 	case "png":
-	case "jpg":
-		logrus.Fatal("jpg")
+		imgData, err = png.Decode(imgFile)
+	case "jpg", "jpeg":
+		imgData, err = jpeg.Decode(imgFile)
+	}
+
+	if imgData == nil {
+		logrus.Warnf("cannot decode image: %v, unsupported format: %v", img.absolutePath, img.imgType)
+		return
+	}
+	if err != nil {
+		logrus.Warnf("cannot decode image: %v, err: %v", img.absolutePath, err)
+		return
+	}
+
+	for y := 0; y < img.Height; y++ {
+		for x := 0; x < img.Width; x++ {
+			color := imgData.At(x, y)
+			canvas.Set(rc.Left + img.padding + x, rc.Top +img.padding + y, color)
+		}
 	}
 }
 

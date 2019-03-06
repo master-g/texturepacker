@@ -76,7 +76,7 @@ func (n *Node) insert(img *ImageInfo) *Node {
 					Left:   n.rc.Left,
 					Top:    n.rc.Top,
 					Right:  n.rc.Left + binWidth,
-					Bottom: n.rc.Bottom + binHeight,
+					Bottom: n.rc.Bottom,
 				},
 			}
 			n.child[1] = &Node{
