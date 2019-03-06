@@ -3,13 +3,16 @@ module github.com/master-g/texturepacker
 go 1.12
 
 require (
-	github.com/fsnotify/fsnotify v1.4.7
-	github.com/master-g/mahjong v0.0.0-20190213123202-493dfc4c598d
+	github.com/BurntSushi/toml v0.3.1 // indirect
+	github.com/inconshreveable/mousetrap v1.0.0 // indirect
+	github.com/kr/pretty v0.1.0 // indirect
 	github.com/mitchellh/go-homedir v1.1.0
-	github.com/oklog/run v1.0.0
+	github.com/sirupsen/logrus v1.3.0
 	github.com/spf13/cobra v0.0.3
 	github.com/spf13/jwalterweatherman v1.1.0
 	github.com/spf13/viper v1.3.1
-	go.uber.org/zap v1.9.1
-	gopkg.in/natefinch/lumberjack.v2 v2.0.0
+	github.com/stretchr/testify v1.3.0 // indirect
+	golang.org/x/sys v0.0.0-20190124100055-b90733256f2e // indirect
+	golang.org/x/text v0.3.1-0.20180807135948-17ff2d5776d2 // indirect
+	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
 )

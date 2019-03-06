@@ -24,12 +24,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/fsnotify/fsnotify"
-	"github.com/master-g/texturepacker/pkg/log"
-	homedir "github.com/mitchellh/go-homedir"
+	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"go.uber.org/zap"
 )
 
 var cfgFile string
@@ -38,7 +35,7 @@ var cfgFile string
 var rootCmd = &cobra.Command{
 	Use:   "texturepacker",
 	Short: "TexturePacker, pack 2D texture recursively",
-	Long: `A very basic implementation`,
+	Long:  `A very basic implementation`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	//	Run: func(cmd *cobra.Command, args []string) { },
@@ -90,11 +87,4 @@ func initConfig() {
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Println("Using config file:", viper.ConfigFileUsed())
 	}
-
-	// watch config file change
-	viper.WatchConfig()
-	viper.OnConfigChange(func(e fsnotify.Event) {
-		// TODO: add config file change handler
-		log.Info("config file changed", zap.String("event", e.String()))
-	})
 }

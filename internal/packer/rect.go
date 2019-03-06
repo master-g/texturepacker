@@ -20,13 +20,6 @@
 
 package packer
 
-// ImageInfo contains image file info and image properties
-type ImageInfo struct {
-	AbsolutePath string
-	Width        int
-	Height       int
-}
-
 // Rectangle represents the place taken by a image file
 type Rectangle struct {
 	Left   int
@@ -43,11 +36,4 @@ func (rc Rectangle) Width() int {
 // Height returns the height of the rectangle
 func (rc Rectangle) Height() int {
 	return rc.Bottom - rc.Top
-}
-
-// Node represents a tree node of the packer
-type Node struct {
-	child []*Node
-	rc    Rectangle
-	image *ImageInfo
 }
