@@ -46,7 +46,7 @@ var paramList = []config.Flag{
 
 // packCmd represents the serve command
 var packCmd = &cobra.Command{
-	Use:   "pack [input images and directories]",
+	Use:   "pack [source image directory]",
 	Short: "pack textures",
 	Long:  `pack multiple image files into a single texture image`,
 	Args:  cobra.MinimumNArgs(1),
