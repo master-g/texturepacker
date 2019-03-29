@@ -49,7 +49,7 @@ var packCmd = &cobra.Command{
 	Use:   "pack [source image directory]",
 	Short: "pack textures",
 	Long:  `pack multiple image files into a single texture image`,
-	Args:  cobra.MinimumNArgs(1),
+	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		setupLogger()
 		runApplication(args)
@@ -150,43 +150,50 @@ func runApplication(args []string) {
 
 	// STEP 2 - inspect input files and input dirs
 
-	// absolute path : filename
-	imageMaps := make(map[string]string)
-
 	var err error
-	var absPath string
-	// iterate all arguments
-	for _, arg := range args {
-		var fi os.FileInfo
-		// check if file/directory is accessible
-		if fi, err = os.Stat(arg); err == nil {
-			switch mode := fi.Mode(); {
-			case mode.IsDir():
-				// walk dir
-				logrus.Debug("searching ", arg, " ...")
-				err = filepath.Walk(arg, func(path string, info os.FileInfo, err2 error) error {
-					absPath, err = filepath.Abs(path)
-					if info.Mode().IsRegular() && filterImageFile(path, info) {
-						logrus.Debug("found ", absPath)
-						imageMaps[absPath] = info.Name()
-					}
-					return nil
-				})
-			case mode.IsRegular():
-				absPath, err = filepath.Abs(arg)
-				if err == nil && filterImageFile(arg, fi) {
-					imageMaps[absPath] = fi.Name()
-				} else if err != nil {
-					logrus.Warn("cannot obtain absolute path of ", arg)
-				}
+	var allImagePath []string
+	var sourceDir string
+	var fi os.FileInfo
+	// check if file/directory is accessible
+	if fi, err = os.Stat(args[0]); err == nil {
+		switch mode := fi.Mode(); {
+		case mode.IsDir():
+			// walk dir
+			sourceDir, err = filepath.Abs(args[0])
+			if err != nil {
+				logrus.Fatal("cannot access ", args[0], " err:", err)
 			}
-		} else {
-			logrus.Warn("cannot access ", arg, " err:", err)
+			logrus.Debug("searching ", sourceDir, " ...")
+			err = filepath.Walk(args[0], func(path string, info os.FileInfo, err2 error) error {
+				var absPath string
+				absPath, err = filepath.Abs(path)
+				if info.Mode().IsRegular() && filterImageFile(path, info) {
+					allImagePath = append(allImagePath, absPath)
+					logrus.Debug("found ", absPath)
+				}
+				return nil
+			})
+		case mode.IsRegular():
+			logrus.Fatal("arg should be a directory")
 		}
+	} else {
+		logrus.Warn("cannot access ", args[0], " err:", err)
 	}
 
-	if len(imageMaps) == 0 {
+	// check images
+	if len(allImagePath) == 0 {
 		logrus.Fatal("no available input image, abort")
+	}
+
+	// absolute-path : relative-path
+	imageMaps := make(map[string]string)
+	sourcePrevDir, _ := filepath.Split(sourceDir)
+	for _, p := range allImagePath {
+		relativePath := strings.TrimPrefix(p, sourcePrevDir)
+		if os.IsPathSeparator(relativePath[0]) {
+			relativePath = relativePath[1:]
+		}
+		imageMaps[p] = relativePath
 	}
 
 	// STEP 3 - inspect output path, if output path is a existed directory, generates output filename for the user
@@ -194,6 +201,11 @@ func runApplication(args []string) {
 	var outputAtlasPath string
 	if outputImagePath == "" {
 		outputImagePath = getDefaultOutputFile(".png")
+	} else {
+		outputImagePath, err = filepath.Abs(outputImagePath)
+		if err != nil {
+			logrus.Fatalf("cannot access %v, err: %v", outputImagePath, err)
+		}
 	}
 	outputExt := filepath.Ext(outputImagePath)
 	withoutExt := strings.TrimSuffix(outputImagePath, outputExt)
@@ -211,6 +223,7 @@ func runApplication(args []string) {
 
 	if p == nil {
 		logrus.Fatal("cannot create packer instance")
+		return
 	}
 
 	// start
