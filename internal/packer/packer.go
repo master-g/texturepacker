@@ -166,10 +166,16 @@ func (p *Packer) Pack(images map[string]string) (err error) {
 		err = jpeg.Encode(outputFile, p.canvas, &jpeg.Options{
 			Quality: p.cfg.Quality,
 		})
-	case "png":
+	case ".png":
 		err = png.Encode(outputFile, p.canvas)
-	case "bmp":
+	case ".bmp":
 		err = bmp.Encode(outputFile, p.canvas)
+	default:
+		logrus.Fatalf("unsupported output image format, %v", p.cfg.OutputImagePath)
+	}
+
+	if err != nil {
+		logrus.Fatalf("cannot encode output image, err:%v", err)
 	}
 
 	// output atlas
@@ -205,7 +211,7 @@ func (p *Packer) insert(img *ImageInfo) (err error) {
 			H: img.Height,
 		}
 	} else {
-		err = errors.New(fmt.Sprintf("cannot pack %v, image oversize: %vx%v", img.absolutePath, img.Width, img.Height))
+		err = fmt.Errorf("cannot pack %v, image oversize: %vx%v", img.absolutePath, img.Width, img.Height)
 	}
 	return
 }

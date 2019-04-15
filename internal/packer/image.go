@@ -110,20 +110,26 @@ func NewImageInfoParseFrom(imagePath, name string, padding int) *ImageInfo {
 
 	// generate id
 	h := hmac.New(sha512.New512_256, []byte("0x12F0E6D"))
-	h.Write([]byte(imagePath))
+	_, err = h.Write([]byte(imagePath))
+	if err != nil {
+		logrus.Fatalf("error while calculating hash, err:%v", err)
+	}
 	imageInfo.ID = base58.Encode(h.Sum(nil)[:8])
 
 	return imageInfo
 }
 
+// PaddedWidth returns image width with padding
 func (img *ImageInfo) PaddedWidth() int {
 	return img.Width + img.padding*2
 }
 
+// PaddedHeight returns image height with padding
 func (img *ImageInfo) PaddedHeight() int {
 	return img.Height + img.padding*2
 }
 
+// CopyToImage copies a region of img to the canvas
 func (img *ImageInfo) CopyToImage(canvas *image.RGBA, rc Rectangle) {
 	// update position
 	img.Left = rc.Left + img.padding

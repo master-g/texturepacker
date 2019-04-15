@@ -31,13 +31,7 @@ then
 
     # lint
     echo "==> Linting..."
-    gometalinter	--vendor \
-                    --fast \
-                    --enable-gc \
-                    --tests \
-                    --aggregate \
-                    --disable=gotype \
-                    ../
+		golangci-lint run ../...
 fi
 
 # build

@@ -223,7 +223,7 @@ func runApplication(args []string) {
 			logrus.Fatalf("cannot access %v, err: %v", outputImagePath, err)
 		}
 		if !filterOutputImageFile(outputImagePath) {
-			logrus.Fatalf("unsupported output format:", filepath.Ext(outputImagePath))
+			logrus.Fatalf("unsupported output format:%v", filepath.Ext(outputImagePath))
 		}
 	}
 	outputExt := filepath.Ext(outputImagePath)
