@@ -38,7 +38,6 @@ var paramList = []config.Flag{
 	{Name: "height", Type: config.Int, Shorthand: "", Value: 1024, Usage: "output image height."},
 	{Name: "padding", Type: config.Int, Shorthand: "", Value: 1, Usage: "atlas padding."},
 	{Name: "out", Type: config.String, Shorthand: "o", Value: "", Usage: "output image file path."},
-	{Name: "format", Type: config.String, Shorthand: "f", Value: "png", Usage: "output image format."},
 	{Name: "schema", Type: config.String, Shorthand: "s", Value: "json", Usage: "output schema format."},
 	{Name: "ignore-large-image", Type: config.Bool, Shorthand: "i", Value: false, Usage: "ignore image too large to fit in the atlas."},
 	{Name: "verbose", Type: config.Bool, Shorthand: "v", Value: false, Usage: "show verbose information during the packing."},
@@ -87,10 +86,31 @@ func setupLogger() {
 	})
 }
 
-func filterImageFile(p string, info os.FileInfo) bool {
-	lowerExt := strings.ToLower(filepath.Ext(p))
-	if lowerExt == ".png" || lowerExt == ".jpg" || lowerExt == ".jpeg" || lowerExt == ".bmp" {
-		return true
+var (
+	availableInputFormat = []string{
+		".png", "jpg", ".jpeg", ".bmp", ".webp",
+	}
+	availableOutputFormat = []string{
+		".png", ".jpg", ".jpeg", ".bmp",
+	}
+)
+
+func filterInputImageFile(p string) bool {
+	inputExt := filepath.Ext(p)
+	for _, ext := range availableInputFormat {
+		if strings.EqualFold(ext, inputExt) {
+			return true
+		}
+	}
+	return false
+}
+
+func filterOutputImageFile(p string) bool {
+	outputExt := filepath.Ext(p)
+	for _, ext := range availableOutputFormat {
+		if strings.EqualFold(ext, outputExt) {
+			return true
+		}
 	}
 	return false
 }
@@ -143,11 +163,6 @@ func runApplication(args []string) {
 		logrus.Fatal("sorry, current version only supports json schema.")
 	}
 
-	outputFormat := strings.ToLower(viper.GetString("format"))
-	if outputFormat != "png" {
-		logrus.Fatal("sorry, current version only supports png output.")
-	}
-
 	// STEP 2 - inspect input files and input dirs
 
 	var err error
@@ -167,7 +182,7 @@ func runApplication(args []string) {
 			err = filepath.Walk(args[0], func(path string, info os.FileInfo, err2 error) error {
 				var absPath string
 				absPath, err = filepath.Abs(path)
-				if info.Mode().IsRegular() && filterImageFile(path, info) {
+				if info.Mode().IsRegular() && filterInputImageFile(path) {
 					allImagePath = append(allImagePath, absPath)
 					logrus.Debug("found ", absPath)
 				}
@@ -205,6 +220,9 @@ func runApplication(args []string) {
 		outputImagePath, err = filepath.Abs(outputImagePath)
 		if err != nil {
 			logrus.Fatalf("cannot access %v, err: %v", outputImagePath, err)
+		}
+		if !filterOutputImageFile(outputImagePath) {
+			logrus.Fatalf("unsupported output format:", filepath.Ext(outputImagePath))
 		}
 	}
 	outputExt := filepath.Ext(outputImagePath)

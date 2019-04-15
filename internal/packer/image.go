@@ -34,6 +34,8 @@ import (
 
 	"github.com/master-g/texturepacker/pkg/base58"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/image/bmp"
+	"golang.org/x/image/webp"
 )
 
 // ImageInfo contains image file info and image properties
@@ -50,6 +52,7 @@ type ImageInfo struct {
 	padding      int
 }
 
+// NewImageInfoParseFrom parse image info from input file
 func NewImageInfoParseFrom(imagePath, name string, padding int) *ImageInfo {
 	var err error
 	var imgFile *os.File
@@ -68,21 +71,31 @@ func NewImageInfoParseFrom(imagePath, name string, padding int) *ImageInfo {
 	// try standard decode
 	var imgData image.Image
 	var imgType string
-	imgData, imgType, err = image.Decode(imgFile)
+	ext := strings.ToLower(filepath.Ext(imagePath))
+	if strings.HasSuffix(ext, "jpg") || strings.HasSuffix(ext, "jpeg") {
+		imgData, err = jpeg.Decode(imgFile)
+		imgType = "jpg"
+	} else if strings.HasSuffix(ext, "png") {
+		imgData, err = png.Decode(imgFile)
+		imgType = "png"
+	} else if strings.HasSuffix(ext, "bmp") {
+		imgData, err = bmp.Decode(imgFile)
+		imgType = "bmp"
+	} else if strings.HasSuffix(ext, "webp") {
+		imgData, err = webp.Decode(imgFile)
+		imgType = "webp"
+	}
+	if imgType == "" {
+		logrus.Errorf("unsupported format: %v", ext)
+		return nil
+	}
 	if err != nil {
-		ext := strings.ToLower(filepath.Ext(imagePath))
-		if strings.HasSuffix(ext, "jpg") || strings.HasSuffix(ext, "jpeg") {
-			imgData, err = jpeg.Decode(imgFile)
-			if err != nil {
-				logrus.Warnf("cannot decode jpg: %v, err: %v", imagePath, err)
-				return nil
-			}
-			imgType = "jpg"
-		}
-
-		if imgData == nil {
-			return nil
-		}
+		logrus.Errorf("unable to decode image: %v, err: %v", imagePath, err)
+		return nil
+	}
+	if imgData == nil {
+		logrus.Errorf("unknown error while decoding image: %v", imagePath)
+		return nil
 	}
 
 	// result
@@ -135,6 +148,10 @@ func (img *ImageInfo) CopyToImage(canvas *image.RGBA, rc Rectangle) {
 		imgData, err = png.Decode(imgFile)
 	case "jpg", "jpeg":
 		imgData, err = jpeg.Decode(imgFile)
+	case "bmp":
+		imgData, err = bmp.Decode(imgFile)
+	case "webp":
+		imgData, err = webp.Decode(imgFile)
 	}
 
 	if imgData == nil {

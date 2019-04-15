@@ -25,10 +25,13 @@ import (
 	"errors"
 	"fmt"
 	"image"
+	"image/jpeg"
 	"image/png"
 	"os"
 	"path/filepath"
 	"sort"
+
+	"golang.org/x/image/bmp"
 
 	"github.com/sirupsen/logrus"
 )
@@ -155,7 +158,17 @@ func (p *Packer) Pack(images map[string]string) (err error) {
 	if err != nil {
 		return
 	}
-	err = png.Encode(outputFile, p.canvas)
+
+	outputExt := filepath.Ext(p.cfg.OutputImagePath)
+	switch outputExt {
+	case ".jpg", ".jpeg":
+		// TODO: quality
+		err = jpeg.Encode(outputFile, p.canvas, nil)
+	case "png":
+		err = png.Encode(outputFile, p.canvas)
+	case "bmp":
+		err = bmp.Encode(outputFile, p.canvas)
+	}
 
 	// output atlas
 	var outputAtlasFile *os.File
