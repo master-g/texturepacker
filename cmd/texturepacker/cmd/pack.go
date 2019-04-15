@@ -38,6 +38,7 @@ var paramList = []config.Flag{
 	{Name: "height", Type: config.Int, Shorthand: "", Value: 1024, Usage: "output image height."},
 	{Name: "padding", Type: config.Int, Shorthand: "", Value: 1, Usage: "atlas padding."},
 	{Name: "out", Type: config.String, Shorthand: "o", Value: "", Usage: "output image file path."},
+	{Name: "quality", Type: config.Int, Shorthand: "q", Value: 100, Usage: "output image quality, for jpg only."},
 	{Name: "schema", Type: config.String, Shorthand: "s", Value: "json", Usage: "output schema format."},
 	{Name: "ignore-large-image", Type: config.Bool, Shorthand: "i", Value: false, Usage: "ignore image too large to fit in the atlas."},
 	{Name: "verbose", Type: config.Bool, Shorthand: "v", Value: false, Usage: "show verbose information during the packing."},
@@ -237,6 +238,7 @@ func runApplication(args []string) {
 		OutputImagePath:  outputImagePath,
 		OutputSchemaPath: outputAtlasPath,
 		IgnoreLargeImage: viper.GetBool("ignore-large-image"),
+		Quality:          viper.GetInt("quality"),
 	})
 
 	if p == nil {

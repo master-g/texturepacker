@@ -44,6 +44,7 @@ type Config struct {
 	OutputImagePath  string
 	OutputSchemaPath string
 	IgnoreLargeImage bool
+	Quality          int
 }
 
 // ImageJson representation of image info
@@ -162,8 +163,9 @@ func (p *Packer) Pack(images map[string]string) (err error) {
 	outputExt := filepath.Ext(p.cfg.OutputImagePath)
 	switch outputExt {
 	case ".jpg", ".jpeg":
-		// TODO: quality
-		err = jpeg.Encode(outputFile, p.canvas, nil)
+		err = jpeg.Encode(outputFile, p.canvas, &jpeg.Options{
+			Quality: p.cfg.Quality,
+		})
 	case "png":
 		err = png.Encode(outputFile, p.canvas)
 	case "bmp":
