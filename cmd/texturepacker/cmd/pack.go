@@ -41,6 +41,7 @@ var paramList = []config.Flag{
 	{Name: "quality", Type: config.Int, Shorthand: "q", Value: 100, Usage: "output image quality, for jpg only."},
 	{Name: "schema", Type: config.String, Shorthand: "s", Value: "json", Usage: "output schema format."},
 	{Name: "ignore-large-image", Type: config.Bool, Shorthand: "i", Value: false, Usage: "ignore image too large to fit in the atlas."},
+	{Name: "metafilename", Type: config.String, Shorthand: "m", Value: "", Usage: "value to fill up the 'image' in output metadata."},
 	{Name: "verbose", Type: config.Bool, Shorthand: "v", Value: false, Usage: "show verbose information during the packing."},
 }
 
@@ -92,7 +93,7 @@ var (
 		".png", "jpg", ".jpeg", ".bmp", ".webp",
 	}
 	availableOutputFormat = []string{
-		".png", ".jpg", ".jpeg", ".bmp",
+		".png", ".jpg", ".jpeg", ".bmp", ".webp",
 	}
 )
 
@@ -239,6 +240,7 @@ func runApplication(args []string) {
 		OutputSchemaPath: outputAtlasPath,
 		IgnoreLargeImage: viper.GetBool("ignore-large-image"),
 		Quality:          viper.GetInt("quality"),
+		MetaFilename:     viper.GetString("metafilename"),
 	})
 
 	if p == nil {

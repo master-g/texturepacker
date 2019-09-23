@@ -31,9 +31,9 @@ import (
 	"path/filepath"
 	"sort"
 
-	"golang.org/x/image/bmp"
-
+	"github.com/nickalie/go-webpbin"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/image/bmp"
 )
 
 // Config of the texture packer
@@ -45,6 +45,7 @@ type Config struct {
 	OutputSchemaPath string
 	IgnoreLargeImage bool
 	Quality          int
+	MetaFilename     string
 }
 
 // ImageJson representation of image info
@@ -95,13 +96,18 @@ func NewPacker(cfg *Config) *Packer {
 		},
 	}
 
+	metaFilename := cfg.MetaFilename
+	if metaFilename == "" {
+		metaFilename = filepath.Base(cfg.OutputImagePath)
+	}
+
 	return &Packer{
 		cfg:    cfg,
 		root:   root,
 		canvas: canvas,
 		atlas: &AtlasJson{
 			Meta: &MetaJson{
-				Filename: filepath.Base(cfg.OutputImagePath),
+				Filename: metaFilename,
 				W:        cfg.OutputWidth,
 				H:        cfg.OutputHeight,
 				Padding:  cfg.Padding,
@@ -170,6 +176,8 @@ func (p *Packer) Pack(images map[string]string) (err error) {
 		err = png.Encode(outputFile, p.canvas)
 	case ".bmp":
 		err = bmp.Encode(outputFile, p.canvas)
+	case ".webp":
+		err = webpbin.Encode(outputFile, p.canvas)
 	default:
 		logrus.Fatalf("unsupported output image format, %v", p.cfg.OutputImagePath)
 	}
